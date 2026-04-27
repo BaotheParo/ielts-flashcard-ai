@@ -1,36 +1,95 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🃏 IELTS Writing Task 1 – AI Flashcard App
 
-## Getting Started
+A **mobile-first, client-side only** progressive web app that generates interactive AI-powered flashcards for IELTS Writing Task 1, powered by Google Gemini AI. Zero backend, zero database.
 
-First, run the development server:
+---
+
+## ✨ Features
+
+- 🧠 **AI-generated flashcards** for 3 topics: Tư duy, Từ vựng, Thực hành
+- 🎴 **3D flip animation** (tap to reveal answer)
+- 👆 **Swipe gestures** (right = known, left = review again)
+- 🔥 **Streak tracking** and XP rewards
+- 🎉 **Confetti** celebration when score > 70%
+- 📱 **Mobile-first** design (iPhone SE & Android ready)
+- 💾 **No backend** — all state in `localStorage`
+
+---
+
+## 🚀 Setup
+
+### 1. Install dependencies
+
+```bash
+cd ielts-flashcard
+npm install
+```
+
+### 2. Run development server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🔑 Getting a Free Gemini API Key
 
-## Learn More
+1. Go to [https://aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey)
+2. Sign in with your Google account
+3. Click **"Create API key"**
+4. Copy the key (starts with `AIza...`, 39 characters)
+5. Paste it into the app's Onboarding screen
 
-To learn more about Next.js, take a look at the following resources:
+> **Free tier**: Gemini 1.5 Flash has a generous free quota — no credit card needed.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 📁 Project Structure
 
-## Deploy on Vercel
+```
+src/
+├── app/
+│   ├── page.tsx              # Home screen
+│   ├── onboarding/page.tsx   # API Key setup
+│   ├── session/[topic]/      # Flashcard session
+│   └── summary/page.tsx      # Session results
+├── components/
+│   ├── flashcard/
+│   │   ├── FlashCard.tsx     # Flip + swipe animation
+│   │   └── CardDeck.tsx      # Queue manager
+│   └── ui/
+│       └── SettingsModal.tsx # Bottom sheet settings
+├── lib/
+│   ├── gemini.ts             # Gemini API client
+│   ├── knowledge-base.ts     # IELTS study material
+│   └── storage.ts            # localStorage helpers
+├── store/
+│   └── useAppStore.ts        # Zustand global state
+└── types/
+    └── index.ts              # Shared TypeScript types
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 📸 Screenshots
+
+| Home Screen | Flashcard Session | Summary |
+|-------------|------------------|---------|
+| _(screenshot)_ | _(screenshot)_ | _(screenshot)_ |
+
+---
+
+## 🛠 Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Framework | Next.js 14 (App Router) |
+| Styling | Tailwind CSS v3 |
+| Animations | Framer Motion v11 |
+| State | Zustand v4 + localStorage |
+| AI | Google Gemini 1.5 Flash |
+| Icons | Lucide React |
+| Font | Inter (Google Fonts) |

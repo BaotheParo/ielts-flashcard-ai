@@ -2,26 +2,45 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ---------- Design Tokens ---------- */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --brand: #7C3AED;
+  --brand-light: #EDE9FE;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ---------- Base ---------- */
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  overscroll-behavior-y: none;
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-inter, 'Inter', system-ui, sans-serif);
+  -webkit-font-smoothing: antialiased;
+  background: #fafafa;
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
+/* ---------- Safe Area ---------- */
+.pt-safe { padding-top: env(safe-area-inset-top); }
+.pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+
+/* ---------- Flip Card Utilities ---------- */
+.preserve-3d { transform-style: preserve-3d; }
+.backface-hidden { backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+
+/* ---------- Custom Scrollbar ---------- */
+.custom-scrollbar::-webkit-scrollbar { width: 4px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 99px; }
+
+/* ---------- Card drag: disable page scroll ---------- */
+.no-drag-scroll { touch-action: none; }
+
+/* ---------- Bounce dots animation ---------- */
+@keyframes bounce-dot {
+  0%, 80%, 100% { transform: translateY(0); }
+  40%           { transform: translateY(-6px); }
 }
+.bounce-dot { animation: bounce-dot 1.2s infinite ease-in-out; }
