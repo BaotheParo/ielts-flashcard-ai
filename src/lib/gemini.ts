@@ -1,7 +1,7 @@
 import { Flashcard, TopicKey } from '@/types';
 import { KNOWLEDGE_BASE } from './knowledge-base';
 
-const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
+const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent';
 
 export class GeminiError extends Error {
   constructor(
@@ -15,79 +15,35 @@ export class GeminiError extends Error {
 
 function buildSystemPrompt(topic: TopicKey, count: number): string {
   let specificInstructions = '';
-  let example = '';
-
   if (topic === 'mindset') {
-    specificInstructions = `Generate ${count} flashcard objects testing the student's MINDSET and STRATEGIC THINKING.
-Focus on: tense identification, paragraph grouping strategy, overview writing, time identification.`;
-    example = `{
-  "id": "mindset_001",
-  "topic": "mindset",
-  "subTopic": "theater_plan",
-  "question": "Khi bản đồ mô tả thay đổi giữa năm 2010 và 2012, bạn BẮT BUỘC dùng thì gì?",
-  "answer": "Quá khứ đơn bị động (Past Simple Passive): was built, was relocated, was demolished.",
-  "explanation": "Vì cả hai năm 2010 và 2012 đều nằm trong quá khứ, toàn bộ hành động xảy ra và kết thúc trong quá khứ. Dùng thì Hiện tại hoàn thành sẽ sai vì không có kết nối đến hiện tại.",
-  "difficulty": "medium",
-  "taskType": "map_change"
-}`;
+    specificInstructions = `Generate ${count} flashcard objects testing the student's MINDSET and STRATEGIC THINKING. Focus on: tense identification, paragraph grouping strategy, overview writing, time identification.`;
   } else if (topic === 'vocab') {
-    specificInstructions = `Generate EXACTLY ${count} vocabulary/grammar flashcards strictly from the material.
-Test vocabulary groups: Location prepositions, Change verbs (passive forms), Comparison structures, Spatial connectors, Size/measurement phrases.
-Card types: fill_in_blank, translation, usage, error_spot.`;
-    example = `{
-  "id": "vocab_001",
-  "topic": "vocab",
-  "subTopic": "beachfront_map",
-  "cardType": "fill_in_blank",
-  "question": "The old playground ___ ___ ___ make way for a new car park. (3 words, passive)",
-  "answer": "has been demolished",
-  "explanation": "Dùng Present Perfect Passive vì sự thay đổi xảy ra từ quá khứ và kéo dài đến hiện tại (1950 → now). Công thức: has/have + been + V3.",
-  "difficulty": "medium",
-  "taskType": "map_change"
-}`;
+    specificInstructions = `Generate EXACTLY ${count} vocabulary/grammar flashcards strictly from the material. Test vocabulary groups: Location prepositions, Change verbs (passive forms), Comparison structures, Spatial connectors.`;
   } else {
-    specificInstructions = `Generate ${count} higher-order practice flashcards.
-Test APPLIED SKILLS: writing overview sentences, choosing correct grouping strategy, identifying which tense rule applies to a described scenario, and evaluating sample sentences.
-Card types: overview_writing, strategy_choice, sentence_evaluation, template_application.`;
-    example = `{
-  "id": "practice_001",
-  "topic": "practice",
-  "subTopic": "city_1950",
-  "cardType": "overview_writing",
-  "question": "Bản đồ so sánh một thành phố năm 1950 và hiện tại. Hãy viết CÂU OVERVIEW hoàn chỉnh (2 câu).",
-  "answer": "Overall, it is clear that the city underwent a massive expansion, accommodating a tenfold increase in its population. Additionally, the most noticeable developments are the creation of a large lake and the significant growth of both the business and residential districts.",
-  "explanation": "Câu Overview cần: (1) Nhận xét tổng quan về thay đổi lớn nhất. (2) Liệt kê 2-3 thay đổi nổi bật nhất mà KHÔNG đi vào chi tiết số liệu.",
-  "difficulty": "hard",
-  "taskType": "map_change"
-}`;
+    specificInstructions = `Generate ${count} practice flashcards. Test applied skills: overview writing, strategy choice, sentence evaluation.`;
   }
 
-  return `You are an IELTS Writing Task 1 exam coach. Your ONLY knowledge source is the study material below.
-You must generate EXACTLY ${count} flashcards in valid JSON array format.
+  return `You are an IELTS Writing Task 1 exam coach. ONLY use the knowledge source below.
+Generate EXACTLY ${count} flashcards in a valid JSON array format.
 
-## KNOWLEDGE SOURCE (DO NOT ADD INFORMATION FROM OUTSIDE THIS):
+## KNOWLEDGE SOURCE:
 ${KNOWLEDGE_BASE}
 
 ## TASK:
 ${specificInstructions}
 
-## REQUIRED JSON FORMAT (return ONLY this, no markdown, no explanation):
-[
-  {
-    "id": "unique_string_id",
-    "topic": "${topic}",
-    "subTopic": "name_of_task_e.g._beachfront_map",
-    "cardType": "optional_type_based_on_topic",
-    "question": "The question to ask the student (in Vietnamese or English)",
-    "answer": "The correct short answer",
-    "explanation": "A 2-3 sentence explanation WHY this answer is correct, citing the specific rule from the material",
-    "difficulty": "easy" | "medium" | "hard",
-    "taskType": "floor_plan" | "map_change" | "diagram_comparison" | "process"
-  }
-]
-
-## EXAMPLE CARD:
-${example}`;
+## OUTPUT FORMAT:
+Return ONLY a JSON array. Each object must have:
+{
+  "id": "string",
+  "topic": "${topic}",
+  "subTopic": "string",
+  "question": "string",
+  "answer": "string",
+  "explanation": "string",
+  "difficulty": "easy"|"medium"|"hard",
+  "taskType": "floor_plan"|"map_change"|"diagram_comparison"|"process"
+}`;
 }
 
 export async function generateFlashcards(
@@ -103,31 +59,27 @@ export async function generateFlashcards(
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         contents: [{ role: 'user', parts: [{ text: systemPrompt }] }],
-        generationConfig: {
-          temperature: 0.7,
-          maxOutputTokens: 2048,
-          responseMimeType: 'application/json',
-        },
+        // Bỏ hoàn toàn response_mime_type để tránh lỗi 400
       }),
     });
 
     if (!response.ok) {
-      if (response.status === 400 || response.status === 403) {
-        throw new GeminiError('INVALID_KEY', 'API Key không hợp lệ hoặc không có quyền truy cập.');
-      }
-      if (response.status === 429) {
-        throw new GeminiError('RATE_LIMIT', 'Vượt quá giới hạn gọi API. Vui lòng thử lại sau.');
-      }
-      throw new GeminiError('NETWORK_ERROR', `Lỗi kết nối: ${response.status}`);
+      const errorData = await response.json().catch(() => ({}));
+      const serverMessage = errorData.error?.message || response.statusText;
+      throw new GeminiError('INVALID_KEY', `Lỗi API (${response.status}): ${serverMessage}`);
     }
 
     const data = await response.json();
-    const rawText = data.candidates[0].content.parts[0].text;
+    let rawText = data.candidates[0].content.parts[0].text;
     
+    // Tự động bóc tách JSON từ văn bản trả về (phòng trường hợp AI trả về kèm Markdown)
     try {
+      const jsonMatch = rawText.match(/\[[\s\S]*\]/);
+      if (jsonMatch) {
+        rawText = jsonMatch[0];
+      }
       const parsed = JSON.parse(rawText) as Flashcard[];
-      if (!Array.isArray(parsed)) throw new Error('Not an array');
-      return parsed;
+      return Array.isArray(parsed) ? parsed : [];
     } catch {
       throw new GeminiError('PARSE_ERROR', 'AI trả về định dạng dữ liệu không hợp lệ.');
     }

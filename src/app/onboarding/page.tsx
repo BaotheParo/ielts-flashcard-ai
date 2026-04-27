@@ -17,13 +17,15 @@ export default function OnboardingPage() {
     e.preventDefault();
     setError('');
 
-    if (!key.startsWith('AIza') || key.length !== 39) {
+    const trimmedKey = key.trim();
+
+    if (!trimmedKey.startsWith('AIza') || trimmedKey.length !== 39) {
       setError('Key không hợp lệ. Phải bắt đầu bằng "AIza" và dài 39 ký tự.');
       return;
     }
 
-    setApiKey(key);
-    saveApiKey(key);
+    setApiKey(trimmedKey);
+    saveApiKey(trimmedKey);
     router.push('/');
   };
 
